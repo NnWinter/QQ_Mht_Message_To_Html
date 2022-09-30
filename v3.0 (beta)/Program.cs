@@ -75,16 +75,42 @@ Func<MhtHeader, bool> IsHeaderValid = (header) =>
 };
 #endregion
 #region 读取至 table 区域的第一行
-Func<StreamReader, List<Message>> MoveStreamToTabel = (streamReader) => {
+List<Message> MoveStreamToTabel(StreamReader streamReader, out string? titleMessage){
+    titleMessage = null;
+    var titleBuilder = new StringBuilder();
     var messages = new List<Message>();
     string? line;
     while((line = streamReader.ReadLine())!= null)
     {
-        var thead_match = Regex.Match(line, "<table .+?>");
-        if (!thead_match.Success) { continue; }
-
-        var ns = line.Substring(thead_match.Index + thead_match.Length);
-        Console.WriteLine(ns);
+        var tHead_match = Regex.Match(line, "<table .+?>");
+        if (!tHead_match.Success) { continue; }
+        // 读取 table 标签之后的内容
+        var after_tHead = line.Substring(tHead_match.Index + tHead_match.Length);
+        // 判断是否在本行有 table 终止标签
+        var tEnd_match = Regex.Match(after_tHead, "</table>");
+        if(tEnd_match.Success)
+        {
+            after_tHead = after_tHead.Substring(0, tEnd_match.Index);
+        }
+        // 读取文本区间中的 tr 行 并转换为 Message
+        var matches = Regex.Matches(after_tHead, "<tr>.+?</tr>");
+        if(matches.Count < 3) { Console.WriteLine("文件缺少消息说明信息，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return null; }
+        // out title
+        for(int i=0; i < 3; i++) 
+        {
+            titleBuilder.AppendLine(matches.ElementAt(i).Value);
+        }
+        titleMessage = titleBuilder.ToString();
+        // 写入第一行消息
+        for (int i = 3; i < matches.Count; i++)
+        {
+            string value = matches[i].Value;
+            //过滤器 - 去掉无效空行
+            var filter = Regex.Match(value, "<tr><td><div .[^>]+>&nbsp;</div></td></tr>");
+            if (filter.Success) { continue; }
+            //添加到消息列表
+            messages.Add(new Message(value));
+        }
     }
     return messages;
 };
@@ -106,8 +132,9 @@ var mhtHeader = GetMhtHeader(streamReader);
 //验证 Header
 if (!IsHeaderValid(mhtHeader)) { Console.WriteLine("mht 文件 Header 有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 //消息记录表格第一行
-var messages = MoveStreamToTabel(streamReader);
-if (messages == null) { Console.WriteLine("未找到消息记录表，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
+string? title = "";
+var messages = MoveStreamToTabel(streamReader, out title);
+if (messages == null || title == null) { Console.WriteLine("未找到消息记录表，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 #endregion
 Console.WriteLine(streamReader.ReadLine());
 
@@ -210,6 +237,11 @@ class Message
 {
     public enum Type
     {
-
+        Date,
+        PlainMessage
+    }
+    public Message(string line)
+    {
+        Console.WriteLine(line);
     }
 }
