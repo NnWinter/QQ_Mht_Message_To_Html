@@ -1,0 +1,15 @@
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\bin\Debug\net6.0-windows\v3.0 (beta).exe
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\bin\Debug\net6.0-windows\v3.0 (beta).deps.json
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\bin\Debug\net6.0-windows\v3.0 (beta).runtimeconfig.json
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\bin\Debug\net6.0-windows\v3.0 (beta).dll
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\bin\Debug\net6.0-windows\v3.0 (beta).pdb
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).csproj.AssemblyReference.cache
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).GeneratedMSBuildEditorConfig.editorconfig
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).AssemblyInfoInputs.cache
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).AssemblyInfo.cs
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).csproj.CoreCompileInputs.cache
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).dll
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\refint\v3.0 (beta).dll
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).pdb
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\v3.0 (beta).genruntimeconfig.cache
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.0 (beta)\obj\Debug\net6.0-windows\ref\v3.0 (beta).dll

@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Buffers.Text;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 #region 获取文件流
@@ -193,6 +195,48 @@ Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
     }
 };
 #endregion
+#region 图片保存
+Func<StreamReader,MhtHeader,string,Dictionary<string,string>> SaveImage = (streamReader, mhtHeader, path) =>
+{
+    var extMapping = new Dictionary<string, string>();
+    string? line;
+
+    // while ((line = streamReader.ReadLine())!= null && !line.Equals(mhtHeader.GetByAttribute(MhtHeader.Attribute.Boundary) + "--")) ;
+    while ((line = streamReader.ReadLine())!= null)
+    {
+        // 当读取到分界线时
+        if (line.Equals(mhtHeader.GetByAttribute(MhtHeader.Attribute.Boundary)))
+        {
+            string ext = streamReader.ReadLine().Split('/')[1];
+            streamReader.ReadLine(); // default is base64
+            string oldimg = streamReader.ReadLine().Split(':')[1];
+            string newimg = oldimg.Substring(0, oldimg.LastIndexOf('.')) + "." + ext;
+            extMapping.Add(oldimg, newimg);
+            // 读一个空行
+            streamReader.ReadLine();
+            // 读取图片数据(遇到空行结束)
+            StringBuilder base64 = new StringBuilder();
+            while ((line = streamReader.ReadLine()) != null && !string.IsNullOrWhiteSpace(line))
+            {
+                base64.Append(line);
+            }
+            byte[] bytes = Convert.FromBase64String(base64.ToString());
+            // 用 MemoryStream 保存图片
+            MemoryStream ms = new MemoryStream(bytes);
+            Image img = Image.FromStream(ms);
+            //  获取图片路径
+            DirectoryInfo dir = new DirectoryInfo(path.Substring(0, path.LastIndexOf('.')));
+            if (!dir.Exists) { dir.Create(); }
+            string imgpath = dir.FullName + "/" + newimg;
+            img.Save(imgpath);
+        }
+    }
+    streamReader.Close();
+    // 重新打开流对图片进行重定向
+    streamReader = new StreamReader(path);
+    return extMapping;
+};
+#endregion
 #region 主程序
 #if DEBUG
 // 文件流
@@ -217,6 +261,8 @@ var options = new UserOptions(fileInfo.FullName);
 if (!options.isValid) { Console.WriteLine("输入的选项有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 // 转换
 ConvertTable(options, streamReader);
+// 存图
+SaveImage(streamReader, mhtHeader,options.path);
 #endregion
 
 
@@ -292,7 +338,7 @@ class MhtHeader
         Content_Type = content_Type;
         Charset = charset;
         Type = type;
-        Boundary = boundary;
+        Boundary = "--" + boundary;
     }
     public MhtHeader()
     {
@@ -321,7 +367,7 @@ class MhtHeader
                 Type = value;
                 return;
             case Attribute.Boundary:
-                Boundary = value;
+                Boundary = "--" + value;
                 return;
         }
     }
