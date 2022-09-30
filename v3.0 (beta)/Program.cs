@@ -108,7 +108,7 @@ Func<StreamReader, bool> MoveStreamToTabel = (streamReader) => {
 #region 转换表格内容
 Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
     // 输出流
-    var streamWriter = new StreamWriter(options.path);
+    var streamWriter = new StreamWriter(options.path.Substring(0, options.path.LastIndexOf(".html"))+".temp");
     try
     {
         // 清空流（覆盖文件）
@@ -193,6 +193,7 @@ Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
             }
         }
     }
+    streamWriter.Flush(); streamWriter.Close();
 };
 #endregion
 #region 图片保存
@@ -200,6 +201,7 @@ Func<StreamReader,MhtHeader,string,Dictionary<string,string>> SaveImage = (strea
 {
     var extMapping = new Dictionary<string, string>();
     string? line;
+    Regex regex = new Regex(@"<tr><td><div class.+?><div .+?>.+?</div>.+?</div><div .+?><IMG src=""(.+?)"">", RegexOptions.Compiled);
 
     // while ((line = streamReader.ReadLine())!= null && !line.Equals(mhtHeader.GetByAttribute(MhtHeader.Attribute.Boundary) + "--")) ;
     while ((line = streamReader.ReadLine())!= null)
@@ -211,7 +213,7 @@ Func<StreamReader,MhtHeader,string,Dictionary<string,string>> SaveImage = (strea
             streamReader.ReadLine(); // default is base64
             string oldimg = streamReader.ReadLine().Split(':')[1];
             string newimg = oldimg.Substring(0, oldimg.LastIndexOf('.')) + "." + ext;
-            extMapping.Add(oldimg, newimg);
+            extMapping.Add(oldimg,newimg);
             // 读一个空行
             streamReader.ReadLine();
             // 读取图片数据(遇到空行结束)
@@ -233,7 +235,23 @@ Func<StreamReader,MhtHeader,string,Dictionary<string,string>> SaveImage = (strea
     }
     streamReader.Close();
     // 重新打开流对图片进行重定向
-    streamReader = new StreamReader(path);
+    streamReader = new StreamReader(path.Substring(0,path.LastIndexOf(".html"))+".temp");
+    StreamWriter streamWriter = new StreamWriter(path);
+    while ((line = streamReader.ReadLine()) != null)
+    {
+        try
+        {
+            line = regex.Replace(line, match => extMapping[match.Groups[1].Value]);
+            streamWriter.WriteLine(line);
+        }
+        catch
+        {
+
+        }
+    }
+    // 关闭读取流
+    streamReader.Close();
+    streamWriter.Flush(); streamWriter.Close();
     return extMapping;
 };
 #endregion
