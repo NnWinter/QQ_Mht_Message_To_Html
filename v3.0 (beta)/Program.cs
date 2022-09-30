@@ -75,7 +75,7 @@ Func<MhtHeader, bool> IsHeaderValid = (header) =>
 };
 #endregion
 #region 读取至 table 区域的第一行
-List<Message> MoveStreamToTabel(StreamReader streamReader, out string? titleMessage){
+static List<Message> MoveStreamToTabel(StreamReader streamReader, out string? titleMessage){
     titleMessage = null;
     var titleBuilder = new StringBuilder();
     var messages = new List<Message>();
@@ -117,26 +117,31 @@ List<Message> MoveStreamToTabel(StreamReader streamReader, out string? titleMess
 #endregion
 #region 主程序
 #if DEBUG
-//文件流
+// 文件流
 Console.WriteLine("打开文件流");
-var streamReader = GetStreamReader(new FileInfo("test.mht"));
+var fileInfo = new FileInfo("test.mht");
+var streamReader = GetStreamReader(fileInfo);
 #else
 //文件流
 var streamReader = GetStreamReader(new FileInfo(args[0]));
 #endif
 if (streamReader == null) { Console.WriteLine("文件读取流为空，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 Console.WriteLine("文件流已打开");
-//获取 Header
+// 获取 Header
 Console.WriteLine("获取 .mht 的 Header 信息");
 var mhtHeader = GetMhtHeader(streamReader);
-//验证 Header
+// 验证 Header
 if (!IsHeaderValid(mhtHeader)) { Console.WriteLine("mht 文件 Header 有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
-//消息记录表格第一行
+// 用户输入参数
+var options = new UserOptions(fileInfo.FullName);
+// 消息记录表格第一行
 string? title = "";
 var messages = MoveStreamToTabel(streamReader, out title);
 if (messages == null || title == null) { Console.WriteLine("未找到消息记录表，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
+// 
 #endregion
 Console.WriteLine(streamReader.ReadLine());
+
 
 
 class MhtHeader
@@ -235,6 +240,8 @@ class MhtHeader
 }
 class Message
 {
+    public DateOnly? date { get; init; }
+    public string? style { get; init; }
     public enum Type
     {
         Date,
@@ -242,6 +249,91 @@ class Message
     }
     public Message(string line)
     {
+        // 日期
+        var regex_date = Regex.Match(line, "<tr><td style=(.+)>日期: (\\d\\d\\d\\d-\\d\\d-\\d\\d)</td></tr>");
+        if(regex_date.Success)
+        {
+            style = regex_date.Groups[1].Value;
+            date = DateOnly.ParseExact(regex_date.Groups[2].Value,"yyyy-MM-dd");
+        }
+        else
+        {
+            // "<tr><td><div style=(.[^>]+)><div style=(.[^>]+)>(.[^<]+)</div>(\d\d:\d\d:\d\d)</div><div style=(.[^>]+)><font style=(.[^>]+)>(.[^<]+)</font></div></td></tr>"
+            var regex_plain = Regex.Matches(line, "style=.[^>]+");
+        }
+        
         Console.WriteLine(line);
+    }
+}
+class UserOptions
+{
+    public bool isValid { get; init; }
+    public bool? cut { get; init; }         // 按时间截取
+    public bool? comp { get; init; }        // 合并样式
+    public DateTime begin { get; init; }    // 截取开始时间
+    public DateTime end { get; init; }      // 截取结束时间
+
+    public UserOptions(string inputFilePath)
+    {
+        // 是否裁剪
+        Console.WriteLine("1.mht转html");
+        Console.WriteLine("2.按日期裁剪mht后 转html");
+        Console.Write(">"); 
+        int input = Console.ReadKey().KeyChar - 49; Console.Write("\n");
+        if (input == 0) { cut = false; }
+        else if (input == 1) { cut = true; }
+        else { Console.WriteLine("选项错误"); return; }
+        // 是否合并样式
+        Console.WriteLine("1.默认");
+        Console.WriteLine("2.合并样式为 css classes");
+        Console.Write(">"); 
+        input = Console.ReadKey().KeyChar - 49; Console.Write("\n");
+        if (input == 0) { comp = false; }
+        else if (input == 1) { comp = true; }
+        else { Console.WriteLine("选项错误"); return; }
+
+        // 若需剪切，问时间范围
+        if (cut == true)
+        {
+            string dateTimeFormat = "yyyy-MM-dd-HH-mm-ss";
+            Console.WriteLine("按 年年年年-月月-日日-时时-分分-秒秒 输入时间");
+
+            Console.WriteLine("输入起始时间 (含):");
+            Console.Write(">"); 
+            string beginStr = Console.ReadLine();
+            DateTime temp = new DateTime();
+            bool flag = DateTime.TryParseExact(beginStr, dateTimeFormat, null, System.Globalization.DateTimeStyles.None, out temp);
+            if (!flag) { Console.WriteLine("日期格式错误"); return; }
+            begin = temp;
+
+            Console.WriteLine("输入结束时间 (含):");
+            Console.Write(">"); 
+            string endStr = Console.ReadLine();
+            flag = DateTime.TryParseExact(endStr, dateTimeFormat, null, System.Globalization.DateTimeStyles.None, out temp);
+            if (!flag) { Console.WriteLine("日期格式错误"); return; }
+            end = temp;
+        }
+        // 若日期错误
+        if (begin > end) { Console.WriteLine("开始时间晚于结束时间"); return; }
+
+        // 输出路径
+        Console.WriteLine("设置输出路径");
+        Console.WriteLine("为空则放入同目录");
+        Console.WriteLine("若自定义路径，输入文件路径及扩展名 如 'C:\\test.html'");
+        Console.WriteLine("注:输出文件所在文件夹必须存在");
+        Console.Write(">");
+        string path = Console.ReadLine().Replace("'", "");
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            path = System.IO.Path.GetFileNameWithoutExtension(inputFilePath) + ".html";
+        }
+        var fileinfo = new System.IO.FileInfo(path);
+
+        // 若文件夹不存在
+        if (!fileinfo.Directory.Exists) { Console.WriteLine("文件夹不存在：\"" + fileinfo.FullName + "\""); return; }
+
+        // 一切正常
+        isValid = true;
     }
 }
