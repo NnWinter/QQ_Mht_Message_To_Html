@@ -74,8 +74,37 @@ Func<MhtHeader, bool> IsHeaderValid = (header) =>
     return true;
 };
 #endregion
-#region 转换
-Action<UserOptions, StreamReader> Convert = (options, streamReader) => {
+#region 移动到表头
+Func<StreamReader, bool> MoveStreamToTabel = (streamReader) => {
+    char[] buffer = new char[12];
+    bool found = false;
+    // 找 <table
+    while (!streamReader.EndOfStream)
+    {
+        streamReader.ReadBlock(buffer, 6, 6);
+        string str = new string(buffer);
+        if (str.Contains("<table"))
+        {
+            found = true;
+            break;
+        }
+        else { Array.Copy(buffer, 6, buffer, 0, 6); }
+    }
+    if (!found) { return false; }
+    // 找 >
+    while (!streamReader.EndOfStream)
+    {
+        streamReader.ReadBlock(buffer, 0, 1);
+        if (buffer[0] == '>')
+        {
+            return true;
+        }
+    }
+    return false;
+};
+#endregion
+#region 转换表格内容
+Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
     // 输出流
     var streamWriter = new StreamWriter(options.path);
     try
@@ -88,15 +117,77 @@ Action<UserOptions, StreamReader> Convert = (options, streamReader) => {
     }
     catch { }
     var styles = new Dictionary<string, int>();
+    int styleCount = 0; // 记录下一个写入的新 style 编号
     DateOnly? currentDate = null;
     if (!options.cut.Value)
     {
-        string? line;
+        // 逐行读取
+        string? line; long line_num = 0;
         while((line = streamReader.ReadLine())!=null)
         {
-            //读取日期区块
+            // 行号
+            line_num++;
+            // 读取样式
+            var matches = Regex.Matches(line, "style=.[^>]+");
+            var m_styles = matches.DistinctBy(m=>m.Value);
+            // 对比字典中样式
+            foreach(Match match in m_styles)
+            {
+                // 替换为已有的 style
+                if (styles.TryGetValue(match.Value, out int value))
+                {
+                    line = line.Replace(match.Value, $"class=\"n{value}\"");
+                }
+                // 使用新 style
+                else
+                {
+                    line = line.Replace(match.Value, $"class=\"n{styleCount}\"");
+                    styles.Add(match.Value, styleCount++);
+                }
+            }
+            // 读取每一行中的 tr 标签
+            var matches_tr = Regex.Matches(line, "<tr>.+?</tr>").Skip(0);
+            
+            // 第一行要单独读取前四个 tr 以输出对话信息
+            if(line_num == 1) {
+                var mhd = matches_tr.Take(4);
+                foreach(var hdm in mhd) { streamWriter.WriteLine(hdm.Value); }
+                streamWriter.Flush();
+                matches_tr = matches_tr.Skip(4);
+            }
+            foreach(Match tr in matches_tr)
+            {
+                // 尝试读取日期区块
+                var match_date = Regex.Match(tr.Value, "<tr><td class=.+?>日期: (\\d\\d\\d\\d-\\d\\d-\\d\\d)</td></tr>");
+                if (match_date.Success)
+                {
+                    // 将日期更新
+                    currentDate = DateOnly.ParseExact(match_date.Groups[1].Value, "yyyy-MM-dd");
+                }
+                // 非日期消息
+                else
+                {
+                    // 当前时间字符串
+                    string mtr = tr.Value;
+                    // 如果日期为空则为错误
+                    if (currentDate == null) { Console.WriteLine($"读取第 {line_num} 行的消息前没有读取到该消息所属日期，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
+                    // 读取日期
+                    var match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d)</div><div class=.+?</div></td></tr>");
+                    // 修改日期 如果没找到指定的日期标签则不做修改
+                    if (match.Success)
+                    {
+                        TimeOnly time = TimeOnly.ParseExact(match.Groups[1].Value.PadLeft(8, '0'), "HH:mm:ss");
+                        DateTime dateTime = currentDate.Value.ToDateTime(time);
+                        string timeStr = dateTime.ToString("yyyy/MM/dd  HH:mm:ss");
+                        mtr = mtr.Replace($"</div>{match.Groups[1].Value}</div>", $"</div>{timeStr}</div>");
+                        Console.WriteLine(mtr);
+                    }
+                }
+            }
         }
     }
+    //Debug
+    foreach(string st in styles.Keys) { Console.WriteLine(st); }
 };
 #endregion
 #region 主程序
@@ -116,11 +207,13 @@ Console.WriteLine("获取 .mht 的 Header 信息");
 var mhtHeader = GetMhtHeader(streamReader);
 // 验证 Header
 if (!IsHeaderValid(mhtHeader)) { Console.WriteLine("mht 文件 Header 有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
+// 移动到表头
+MoveStreamToTabel(streamReader);
 // 用户输入参数
 var options = new UserOptions(fileInfo.FullName);
 if (!options.isValid) { Console.WriteLine("输入的选项有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 // 转换
-Convert(options, streamReader);
+ConvertTable(options, streamReader);
 #endregion
 
 
@@ -254,17 +347,17 @@ class UserOptions
     {
         // 是否裁剪
         Console.WriteLine("1.mht转html");
-        Console.WriteLine("2.按日期裁剪mht后 转html");
+        Console.WriteLine("2.按日期裁剪mht后 转html\n");
         Console.Write(">"); 
-        int input = Console.ReadKey().KeyChar - 49; Console.Write("\n");
+        int input = Console.ReadKey().KeyChar - 49; Console.WriteLine("\n");
         if (input == 0) { cut = false; }
         else if (input == 1) { cut = true; }
         else { Console.WriteLine("选项错误"); return; }
         // 是否合并样式
         Console.WriteLine("1.默认");
-        Console.WriteLine("2.合并样式为 css classes");
+        Console.WriteLine("2.合并样式为 css classes\n");
         Console.Write(">"); 
-        input = Console.ReadKey().KeyChar - 49; Console.Write("\n");
+        input = Console.ReadKey().KeyChar - 49; Console.WriteLine("\n");
         if (input == 0) { comp = false; }
         else if (input == 1) { comp = true; }
         else { Console.WriteLine("选项错误"); return; }
@@ -274,7 +367,7 @@ class UserOptions
         {
             string dateTimeFormat = "yyyy-MM-dd-HH-mm-ss";
             Console.WriteLine("按 年年年年-月月-日日-时时-分分-秒秒 输入时间");
-
+            Console.WriteLine();
             Console.WriteLine("输入起始时间 (含):");
             Console.Write(">"); 
             string beginStr = Console.ReadLine();
@@ -283,6 +376,7 @@ class UserOptions
             if (!flag) { Console.WriteLine("日期格式错误"); return; }
             begin = temp;
 
+            Console.WriteLine();
             Console.WriteLine("输入结束时间 (含):");
             Console.Write(">"); 
             string endStr = Console.ReadLine();
@@ -297,9 +391,9 @@ class UserOptions
         Console.WriteLine("设置输出路径");
         Console.WriteLine("为空则放入同目录");
         Console.WriteLine("若自定义路径，输入文件路径及扩展名 如 'C:\\test.html'");
-        Console.WriteLine("注:输出文件所在文件夹必须存在");
+        Console.WriteLine("注:输出文件所在文件夹必须存在\n");
         Console.Write(">");
-        string path = Console.ReadLine().Replace("'", "");
+        string path = Console.ReadLine().Replace("'", ""); Console.WriteLine();
 
         if (string.IsNullOrWhiteSpace(path))
         {
