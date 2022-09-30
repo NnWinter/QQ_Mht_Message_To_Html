@@ -180,14 +180,17 @@ Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
                         DateTime dateTime = currentDate.Value.ToDateTime(time);
                         string timeStr = dateTime.ToString("yyyy/MM/dd  HH:mm:ss");
                         mtr = mtr.Replace($"</div>{match.Groups[1].Value}</div>", $"</div>{timeStr}</div>");
-                        Console.WriteLine(mtr);
+                        streamWriter.WriteLine(mtr);
                     }
                 }
             }
+            streamWriter.Flush();
+            if (line.Contains("</table>")) 
+            { 
+                break; 
+            }
         }
     }
-    //Debug
-    foreach(string st in styles.Keys) { Console.WriteLine(st); }
 };
 #endregion
 #region 主程序
