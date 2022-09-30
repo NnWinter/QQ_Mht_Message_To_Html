@@ -18,25 +18,25 @@ Func<FileInfo, StreamReader?> GetStreamReader = (fileInfo) => {
 #region 解析文件头
 Func<StreamReader, MhtHeader> GetMhtHeader = (streamReader) =>
 {
-    // 在前20行内找到所有 header 定义
+    // 在前8行内找到所有 header 定义
     var strb = new StringBuilder();
-    for(int i = 0; i < 20; i++)
+    for(int i = 0; i < 8; i++)
     {
         string? line = streamReader.ReadLine();
-        if(line == null) { break; }
+        if(line == null) { Console.WriteLine("文件格式有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return null; }
         strb.AppendLine(line);
     }
     var headerStr = strb.ToString();
     // 正则 Header 参数
     var matches = new Dictionary<MhtHeader.Attribute, Match>();
     matches.Add(MhtHeader.Attribute.From,
-        Regex.Match(headerStr, "From: (<.+>)"));
+        Regex.Match(headerStr, "From:[\\s+?]?(.+)[\\s+?]?Subject"));
     matches.Add(MhtHeader.Attribute.Subject, 
-        Regex.Match(headerStr, "Subject:(?:\\s+)?(.[^\\s]+)(?:\\n)?(?:\\s+)?MIME"));
+        Regex.Match(headerStr, "Subject:[\\s+?]?(.+)[\\s+?]?MIME"));
     matches.Add(MhtHeader.Attribute.MIME_Version,
-        Regex.Match(headerStr, "MIME-Version:(?:\\s+)?(.[^\\s]+)(?:\\n)?(?:\\s+)?Content"));
+        Regex.Match(headerStr, "MIME-Version:[\\s+?]?(.+)[\\s+?]?Content"));
     matches.Add(MhtHeader.Attribute.Content_Type, 
-        Regex.Match(headerStr, "Content-Type:([^\\s+].[^\\s+]+?);"));
+        Regex.Match(headerStr, "Content-Type:[\\s+?]?(.+)[\\s+?]?;"));
     matches.Add(MhtHeader.Attribute.Charset, 
         Regex.Match(headerStr, "charset=\"(.+?)\""));
     matches.Add(MhtHeader.Attribute.Type,
@@ -48,17 +48,47 @@ Func<StreamReader, MhtHeader> GetMhtHeader = (streamReader) =>
     foreach (var match in matches)
     {
         if (!match.Value.Success) { Console.WriteLine($"未找到参数 {match.Key:g} ，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return null; }
-        mhtHeader.SetByAttribute(match.Key, match.Value.Groups[1].Value);
+        mhtHeader.SetByAttribute(match.Key, match.Value.Groups[1].Value.Replace("\r","").Replace("\n",""));
     }
     // 二次校验参数是否缺失
     if (mhtHeader.HasNull()) { Console.WriteLine("Header 缺失参数，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return null; }
     // 返回 Header
     return mhtHeader;
 };
-
-
 #endregion
+#region 验证文件头
+Func<MhtHeader, bool> IsHeaderValid = (header) =>
+{
+    if(header.GetByAttribute(MhtHeader.Attribute.From) != "<Save by Tencent MsgMgr>") {
+        Console.WriteLine("mht 文件 From 不是 Tencent MsgMgr 格式，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return false;
+    }
+    if(header.GetByAttribute(MhtHeader.Attribute.Subject) != "Tencent IM Message"){
+        Console.WriteLine("mht 文件 Subject 不是 Tencent IM Message 格式，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return false;
+    }
+    if (header.GetByAttribute(MhtHeader.Attribute.Content_Type) != "multipart/related"){
+        Console.WriteLine("mht 文件 Content-Type 不是 multipart/related 格式，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return false;
+    }
+    if (header.GetByAttribute(MhtHeader.Attribute.MIME_Version) != "1.0"){
+        Console.WriteLine("mht 文件 MIME_Version 不是 1.0，按任意键忽略警告 或关闭窗口退出"); Console.ReadKey();
+    }
+    return true;
+};
+#endregion
+#region 读取至 table 区域的第一行
+Func<StreamReader, List<Message>> MoveStreamToTabel = (streamReader) => {
+    var messages = new List<Message>();
+    string? line;
+    while((line = streamReader.ReadLine())!= null)
+    {
+        var thead_match = Regex.Match(line, "<table .+?>");
+        if (!thead_match.Success) { continue; }
 
+        var ns = line.Substring(thead_match.Index + thead_match.Length);
+        Console.WriteLine(ns);
+    }
+    return messages;
+};
+#endregion
 #region 主程序
 #if DEBUG
 //文件流
@@ -73,8 +103,13 @@ Console.WriteLine("文件流已打开");
 //获取 Header
 Console.WriteLine("获取 .mht 的 Header 信息");
 var mhtHeader = GetMhtHeader(streamReader);
+//验证 Header
+if (!IsHeaderValid(mhtHeader)) { Console.WriteLine("mht 文件 Header 有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
+//消息记录表格第一行
+var messages = MoveStreamToTabel(streamReader);
+if (messages == null) { Console.WriteLine("未找到消息记录表，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 #endregion
-Console.WriteLine();
+Console.WriteLine(streamReader.ReadLine());
 
 
 class MhtHeader
@@ -169,5 +204,12 @@ class MhtHeader
             Charset         == null || 
             Type            == null ||
             Boundary        == null;
+    }
+}
+class Message
+{
+    public enum Type
+    {
+
     }
 }

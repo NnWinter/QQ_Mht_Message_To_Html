@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "CBIsJPjVkNsMGojpfkm1y4P+SlYoM1Q+eb/MZRrL1iMjLu2jYKKMtBt014kBqPJ4JOOmm0pkBgN09Nh1VGNj/g==",
+  "success": true,
+  "projectFilePath": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v2.0 (stable)\\v2.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Administrator\\.nuget\\packages\\htmlagilitypack\\1.11.37\\htmlagilitypack.1.11.37.nupkg.sha512"
+  ],
+  "logs": []
+}
