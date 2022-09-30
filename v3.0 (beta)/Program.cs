@@ -74,45 +74,29 @@ Func<MhtHeader, bool> IsHeaderValid = (header) =>
     return true;
 };
 #endregion
-#region 读取至 table 区域的第一行
-static List<Message> MoveStreamToTabel(StreamReader streamReader, out string? titleMessage){
-    titleMessage = null;
-    var titleBuilder = new StringBuilder();
-    var messages = new List<Message>();
-    string? line;
-    while((line = streamReader.ReadLine())!= null)
+#region 转换
+Action<UserOptions, StreamReader> Convert = (options, streamReader) => {
+    // 输出流
+    var streamWriter = new StreamWriter(options.path);
+    try
     {
-        var tHead_match = Regex.Match(line, "<table .+?>");
-        if (!tHead_match.Success) { continue; }
-        // 读取 table 标签之后的内容
-        var after_tHead = line.Substring(tHead_match.Index + tHead_match.Length);
-        // 判断是否在本行有 table 终止标签
-        var tEnd_match = Regex.Match(after_tHead, "</table>");
-        if(tEnd_match.Success)
+        // 清空流（覆盖文件）
+        streamWriter.BaseStream.Position = 0;
+        streamWriter.BaseStream.SetLength(0);
+        // 写入头
+        WriteHtmlHead(streamWriter);
+    }
+    catch { }
+    var styles = new Dictionary<string, int>();
+    DateOnly? currentDate = null;
+    if (!options.cut.Value)
+    {
+        string? line;
+        while((line = streamReader.ReadLine())!=null)
         {
-            after_tHead = after_tHead.Substring(0, tEnd_match.Index);
-        }
-        // 读取文本区间中的 tr 行 并转换为 Message
-        var matches = Regex.Matches(after_tHead, "<tr>.+?</tr>");
-        if(matches.Count < 3) { Console.WriteLine("文件缺少消息说明信息，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return null; }
-        // out title
-        for(int i=0; i < 3; i++) 
-        {
-            titleBuilder.AppendLine(matches.ElementAt(i).Value);
-        }
-        titleMessage = titleBuilder.ToString();
-        // 写入第一行消息
-        for (int i = 3; i < matches.Count; i++)
-        {
-            string value = matches[i].Value;
-            //过滤器 - 去掉无效空行
-            var filter = Regex.Match(value, "<tr><td><div .[^>]+>&nbsp;</div></td></tr>");
-            if (filter.Success) { continue; }
-            //添加到消息列表
-            messages.Add(new Message(value));
+            //读取日期区块
         }
     }
-    return messages;
 };
 #endregion
 #region 主程序
@@ -134,16 +118,35 @@ var mhtHeader = GetMhtHeader(streamReader);
 if (!IsHeaderValid(mhtHeader)) { Console.WriteLine("mht 文件 Header 有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
 // 用户输入参数
 var options = new UserOptions(fileInfo.FullName);
-// 消息记录表格第一行
-string? title = "";
-var messages = MoveStreamToTabel(streamReader, out title);
-if (messages == null || title == null) { Console.WriteLine("未找到消息记录表，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
-// 
+if (!options.isValid) { Console.WriteLine("输入的选项有误，按任意键退出"); Console.ReadKey(); Environment.Exit(1); return; }
+// 转换
+Convert(options, streamReader);
 #endregion
-Console.WriteLine(streamReader.ReadLine());
 
 
-
+static void WriteHtmlHead(StreamWriter streamWriter)
+{
+    streamWriter.WriteLine("<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n" +
+        "<head>\r\n" +
+        "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\r\n" +
+        "    <title>QQ Message</title>\r\n" +
+        "    <style type=\"text/css\">\r\n" +
+        "        body {\r\n" +
+        "            font-size: 12px;\r\n" +
+        "            line-height: 22px;\r\n" +
+        "            margin: 2px;\r\n" +
+        "        }\r\n" +
+        "\r\n" +
+        "        td {\r\n" +
+        "            font-size: 12px;\r\n" +
+        "            line-height: 22px;\r\n" +
+        "        }\r\n" +
+        "    </style>\r\n" +
+        "</head>\r\n" +
+        "<body>\r\n" +
+        "    <table width=\"100%\" cellspacing=\"0\">");
+    streamWriter.Flush();
+}
 class MhtHeader
 {
     public enum Attribute
@@ -238,33 +241,6 @@ class MhtHeader
             Boundary        == null;
     }
 }
-class Message
-{
-    public DateOnly? date { get; init; }
-    public string? style { get; init; }
-    public enum Type
-    {
-        Date,
-        PlainMessage
-    }
-    public Message(string line)
-    {
-        // 日期
-        var regex_date = Regex.Match(line, "<tr><td style=(.+)>日期: (\\d\\d\\d\\d-\\d\\d-\\d\\d)</td></tr>");
-        if(regex_date.Success)
-        {
-            style = regex_date.Groups[1].Value;
-            date = DateOnly.ParseExact(regex_date.Groups[2].Value,"yyyy-MM-dd");
-        }
-        else
-        {
-            // "<tr><td><div style=(.[^>]+)><div style=(.[^>]+)>(.[^<]+)</div>(\d\d:\d\d:\d\d)</div><div style=(.[^>]+)><font style=(.[^>]+)>(.[^<]+)</font></div></td></tr>"
-            var regex_plain = Regex.Matches(line, "style=.[^>]+");
-        }
-        
-        Console.WriteLine(line);
-    }
-}
 class UserOptions
 {
     public bool isValid { get; init; }
@@ -272,6 +248,7 @@ class UserOptions
     public bool? comp { get; init; }        // 合并样式
     public DateTime begin { get; init; }    // 截取开始时间
     public DateTime end { get; init; }      // 截取结束时间
+    public string path { get; init; }       // 输出路径
 
     public UserOptions(string inputFilePath)
     {
@@ -334,6 +311,7 @@ class UserOptions
         if (!fileinfo.Directory.Exists) { Console.WriteLine("文件夹不存在：\"" + fileinfo.FullName + "\""); return; }
 
         // 一切正常
+        this.path = path;
         isValid = true;
     }
 }
