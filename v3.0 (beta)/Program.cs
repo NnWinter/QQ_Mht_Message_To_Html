@@ -1,7 +1,4 @@
-﻿using System.Buffers.Text;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 #region 获取文件流
 Func<FileInfo, StreamReader?> GetStreamReader = (fileInfo) => {
@@ -105,6 +102,16 @@ Func<StreamReader, bool> MoveStreamToTabel = (streamReader) => {
     return false;
 };
 #endregion
+#region 写入表格样式
+Action<Dictionary<string, int>, StreamWriter> WriteStyles = (styles,sw) => {
+    sw.WriteLine("    <style tyle=\"text/css\">");
+    foreach(var style in styles)
+    {
+        sw.WriteLine();
+    }
+    sw.WriteLine("</style>");
+};
+#endregion
 #region 转换表格内容
 Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
     // 输出流
@@ -193,6 +200,7 @@ Action<UserOptions, StreamReader> ConvertTable = (options, streamReader) => {
             }
         }
     }
+    WriteStyles(styles, streamWriter);
     streamWriter.Flush(); streamWriter.Close();
 };
 #endregion
@@ -239,15 +247,8 @@ Func<StreamReader,MhtHeader,string,Dictionary<string,string>> SaveImage = (strea
     StreamWriter streamWriter = new StreamWriter(path);
     while ((line = streamReader.ReadLine()) != null)
     {
-        try
-        {
-            line = regex.Replace(line, match => extMapping[match.Groups[1].Value]);
-            streamWriter.WriteLine(line);
-        }
-        catch
-        {
-
-        }
+        line = regex.Replace(line, match => extMapping[match.Groups[1].Value]);
+        streamWriter.WriteLine(line);
     }
     // 关闭读取流
     streamReader.Close();
@@ -408,7 +409,7 @@ class UserOptions
     public bool? comp { get; init; }        // 合并样式
     public DateTime begin { get; init; }    // 截取开始时间
     public DateTime end { get; init; }      // 截取结束时间
-    public string path { get; init; }       // 输出路径
+    public string? path { get; init; }       // 输出路径
 
     public UserOptions(string inputFilePath)
     {
@@ -420,7 +421,10 @@ class UserOptions
         if (input == 0) { cut = false; }
         else if (input == 1) { cut = true; }
         else { Console.WriteLine("选项错误"); return; }
-        // 是否合并样式
+
+        // 是否合并样式 (新版总是合并样式)
+        comp = true;
+        /*
         Console.WriteLine("1.默认");
         Console.WriteLine("2.合并样式为 css classes\n");
         Console.Write(">"); 
@@ -428,6 +432,7 @@ class UserOptions
         if (input == 0) { comp = false; }
         else if (input == 1) { comp = true; }
         else { Console.WriteLine("选项错误"); return; }
+        */
 
         // 若需剪切，问时间范围
         if (cut == true)
