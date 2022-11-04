@@ -10,10 +10,13 @@ namespace v3._1
 {
     internal class 保存图片
     {
-        public static Dictionary<string, string>? 获取图片字典(StreamReader? stream, UserOptions options)
+        public static Dictionary<string, string> 获取图片字典(StreamReader? stream, UserOptions options)
         {
+            //图片名映射表
+            var extMapping = new Dictionary<string, string>();
+
             //跳过正文并返回行号
-            if (stream == null) { 控制台.错误("未能成功打开文件读取流"); return null; }
+            if (stream == null) { 控制台.错误("未能成功打开文件读取流"); return extMapping; }
             long skiped = 跳过正文内容(stream);
 
             //函数
@@ -59,6 +62,7 @@ namespace v3._1
             //保存图片数据
             Action<StreamReader, string, UserOptions> SaveImg = (stream, imgName, options) =>
             {
+                try { 
                 StringBuilder base64 = new StringBuilder();
 
                 // 读取图片数据(遇到空行结束)
@@ -78,11 +82,16 @@ namespace v3._1
                 if (!outDir.Exists) { outDir.Create(); }
                 var outPath = Path.Combine(outDir.FullName, imgName);
                 img.Save(outPath);
+                }
+                catch { 控制台.错误("读取并保存图片数据时发生了一个错误 - 位于行: " + skiped); }
             };
             #endregion
 
-            //图片名映射表
-            var extMapping = new Dictionary<string, string>();
+            
+
+            //控制台进度提示
+            long imgCount = 0;
+            Console.Write($"已保存 {imgCount} 个图片".PadRight(20));
 
             //查找分割线
             string? line;
@@ -108,9 +117,13 @@ namespace v3._1
 
                     //保存图片
                     SaveImg(stream, imgName, options);
+
+                    //输出提示
+                    Console.CursorLeft = 0;
+                    Console.Write($"已保存 {++imgCount} 个图片".PadRight(20));
                 }
             }
-
+            Console.WriteLine();
             //返回映射表
             return extMapping;
         }

@@ -11,12 +11,12 @@ namespace v3._1
     {
         public static StreamReader? GetReader(FileInfo fileInfo)
         {
-            if (!fileInfo.Exists) { 控制台.错误("拖入的文件不存在，或使用了错误的参数");}
-            if (fileInfo.Extension != ".mht") { 控制台.错误("指定文件的格式不是mht");}
+            if (!fileInfo.Exists) { 控制台.错误("拖入的文件不存在，或使用了错误的参数"); }
+            if (fileInfo.Extension != ".mht") { 控制台.错误("指定文件的格式不是mht"); }
             try
             {
                 var streamReader = new StreamReader(fileInfo.FullName);
-                if (streamReader.Peek() < 0) { 控制台.错误("文件内容为空");}
+                if (streamReader.Peek() < 0) { 控制台.错误("文件内容为空"); }
                 return streamReader;
             }
             catch { 控制台.错误("打开文件读取流失败"); }
@@ -25,6 +25,29 @@ namespace v3._1
         public static UserOptions 获取选项(FileInfo fileInfo)
         {
             return new UserOptions(fileInfo);
+        }
+        public static string HtmlHead()
+        {
+            return
+        "<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n" +
+        "<head>\r\n" +
+        "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\r\n" +
+        "    <title>QQ Message</title>\r\n" +
+        "    <style type=\"text/css\">\r\n" +
+        "        body {\r\n" +
+        "            font-size: 12px;\r\n" +
+        "            line-height: 22px;\r\n" +
+        "            margin: 2px;\r\n" +
+        "        }\r\n" +
+        "\r\n" +
+        "        td {\r\n" +
+        "            font-size: 12px;\r\n" +
+        "            line-height: 22px;\r\n" +
+        "        }\r\n" +
+        "    </style>\r\n" +
+        "</head>\r\n" +
+        "<body>\r\n" +
+        "    <table width=\"100%\" cellspacing=\"0\">";
         }
     }
 
@@ -47,7 +70,7 @@ namespace v3._1
             int input = Console.ReadKey().KeyChar - 49; Console.WriteLine("\n");
             if (input == 0) { cut = false; }
             else if (input == 1) { cut = true; }
-            else { 控制台.错误("选项错误");}
+            else { 控制台.错误("选项错误"); }
 
             // 是否合并样式 (新版总是合并样式)
             comp = true;
@@ -62,10 +85,10 @@ namespace v3._1
                 Console.WriteLine("输入起始时间 (含):");
                 Console.Write(">");
                 string? beginStr = Console.ReadLine();
-                if(beginStr == null) { 控制台.错误("输入了无效的时间"); }
+                if (beginStr == null) { 控制台.错误("输入了无效的时间"); }
                 DateTime temp;
                 bool flag = DateTime.TryParseExact(beginStr, dateTimeFormat, null, System.Globalization.DateTimeStyles.None, out temp);
-                if (!flag) { 控制台.错误("日期格式错误");}
+                if (!flag) { 控制台.错误("日期格式错误"); }
                 begin = temp;
 
                 Console.WriteLine();
@@ -74,11 +97,11 @@ namespace v3._1
                 string? endStr = Console.ReadLine();
                 if (endStr == null) { 控制台.错误("输入了无效的时间"); }
                 flag = DateTime.TryParseExact(endStr, dateTimeFormat, null, System.Globalization.DateTimeStyles.None, out temp);
-                if (!flag) { 控制台.错误("日期格式错误");}
+                if (!flag) { 控制台.错误("日期格式错误"); }
                 end = temp;
             }
             // 若日期错误
-            if (begin > end) { 控制台.错误("开始时间晚于结束时间");}
+            if (begin > end) { 控制台.错误("开始时间晚于结束时间"); }
 
             // 输出路径
             Console.WriteLine("设置输出路径");
@@ -94,7 +117,7 @@ namespace v3._1
             }
             else
             {
-                path = path.Replace("'", ""); 
+                path = path.Replace("'", "");
             }
             var fileinfo = new FileInfo(path);
 
@@ -102,7 +125,7 @@ namespace v3._1
 
             // 检查父目录是否合法
             DirectoryInfo? dir = fileinfo.Directory;
-            if (dir == null || !dir.Exists) 
+            if (dir == null || !dir.Exists)
             {
                 控制台.错误("文件找不到所属文件夹路径 - \"" + fileinfo.FullName + "\"");
                 this.fileinfo = new FileInfo("");
