@@ -32,7 +32,7 @@ UserOptions userOptions = IO.获取选项(mhtFileInfo);
 // 保存文件中所有图片并取得字典
 Console.WriteLine("保存图片中...");
 var imgDic = 保存图片.获取图片字典(IO.GetReader(mhtFileInfo), userOptions);
-Console.WriteLine("图片保存完毕");
+Console.WriteLine("图片保存完毕\n");
 
 // 读取正文
 long lineCount = 0;
@@ -46,4 +46,5 @@ MhtHeader header = new MhtHeader(mhtStream, ref lineCount);
 内容读取.读写(mhtStream, imgDic, userOptions, ref lineCount);
 
 #endregion
-Console.WriteLine();
+Console.WriteLine("程序运行完毕, 按任意键退出");
+Console.ReadKey();

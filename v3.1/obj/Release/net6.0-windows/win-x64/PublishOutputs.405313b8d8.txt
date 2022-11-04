@@ -1,0 +1,2 @@
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\win-x64\v3.1.pdb
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\win-x64\v3.1.exe

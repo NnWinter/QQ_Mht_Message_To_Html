@@ -1,0 +1,5 @@
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\v3.1.exe
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\v3.1.dll
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\v3.1.deps.json
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\v3.1.runtimeconfig.json
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\bin\Release\net6.0-windows\publish\v3.1.pdb

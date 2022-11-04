@@ -89,6 +89,31 @@ namespace v3._1
             sb.AppendLine("    </style>\n</body>\n</html>");
             return sb.ToString(); ;
         }
+        public static void 移动多余图片(UserOptions options, HashSet<string> imgs)
+        {
+            long count = 0;
+
+            DirectoryInfo imgDir = options.ImgOutDir();
+            FileInfo[] files = imgDir.GetFiles();
+            var selected = files.Where(f => !imgs.Any(i => f.Name == i));
+
+            DirectoryInfo moveDir = new DirectoryInfo(imgDir.FullName + "\\未使用");
+            if (!moveDir.Exists) { moveDir.Create(); }
+            foreach(FileInfo file in selected)
+            {
+                FileInfo newFileInfo = new FileInfo(Path.Combine(moveDir.FullName, file.Name));
+                if (newFileInfo.Exists)
+                {
+                    Console.WriteLine("警告 - 图片已存在，无法移动至未使用目录：" + file.FullName + " => " + newFileInfo.FullName);
+                }
+                else
+                {
+                    file.MoveTo(newFileInfo.FullName);
+                    count++;
+                }
+            }
+            Console.WriteLine($"移动了 {count} 个未使用的图片");
+        }
     }
 
     class UserOptions
