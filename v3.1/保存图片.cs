@@ -62,32 +62,31 @@ namespace v3._1
             //保存图片数据
             Action<StreamReader, string, UserOptions> SaveImg = (stream, imgName, options) =>
             {
-                try { 
-                StringBuilder base64 = new StringBuilder();
-
-                // 读取图片数据(遇到空行结束)
-                string? line;
-                while ((line = stream.ReadLine()) != null && !string.IsNullOrWhiteSpace(line))
+                try
                 {
-                    base64.Append(line);
-                }
-                byte[] bytes = Convert.FromBase64String(base64.ToString());
+                    StringBuilder base64 = new StringBuilder();
 
-                // 用 MemoryStream 保存图片
-                MemoryStream ms = new MemoryStream(bytes);
-                Image img = Image.FromStream(ms);
+                    // 读取图片数据(遇到空行结束)
+                    string? line;
+                    while ((line = stream.ReadLine()) != null && !string.IsNullOrWhiteSpace(line))
+                    {
+                        base64.Append(line);
+                    }
+                    byte[] bytes = Convert.FromBase64String(base64.ToString());
 
-                //  获取图片路径
-                var outDir = new DirectoryInfo(Path.Combine(options.dir.FullName, Path.GetFileNameWithoutExtension(imgName)));
-                if (!outDir.Exists) { outDir.Create(); }
-                var outPath = Path.Combine(outDir.FullName, imgName);
-                img.Save(outPath);
+                    // 用 MemoryStream 保存图片
+                    MemoryStream ms = new MemoryStream(bytes);
+                    Image img = Image.FromStream(ms);
+
+                    //  获取图片路径
+                    var outDir = options.ImgOutDir();
+                    if (!outDir.Exists) { outDir.Create(); }
+                    var outPath = Path.Combine(outDir.FullName, imgName);
+                    img.Save(outPath);
                 }
                 catch { 控制台.错误("读取并保存图片数据时发生了一个错误 - 位于行: " + skiped); }
             };
             #endregion
-
-            
 
             //控制台进度提示
             long imgCount = 0;

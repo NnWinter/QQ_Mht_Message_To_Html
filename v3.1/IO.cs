@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.Design.AxImporter;
 
 namespace v3._1
 {
@@ -48,6 +49,25 @@ namespace v3._1
         "</head>\r\n" +
         "<body>\r\n" +
         "    <table width=\"100%\" cellspacing=\"0\">";
+        }
+        public static string HtmlFoot(Dictionary<string, int> styles)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("    </table>");
+            sb.AppendLine("    <style tyle=\"text/css\">");
+            foreach (var style in styles)
+            {
+                // 对比字典中样式 -> style=aaa:bbb;ccc:ddd;>
+                // 对比字典中样式 -> style="aaa:bbb;ccc:ddd;" eee='fff' ggg=hhh>
+
+
+
+
+                string style_str = string.Format(".n{0}{{{1}}}\n", style.Value, style.Key);
+                sb.AppendLine(style_str);
+            }
+            sb.AppendLine("    </style>\n</body>\n</html>");
+            return sb.ToString(); ;
         }
     }
 
@@ -113,7 +133,7 @@ namespace v3._1
 
             if (string.IsNullOrWhiteSpace(path))
             {
-                path = Path.GetFileNameWithoutExtension(inputFilePath) + ".html";
+                path = Path.ChangeExtension(inputFilePath, ".html");
             }
             else
             {
@@ -136,6 +156,10 @@ namespace v3._1
                 this.fileinfo = fileinfo;
                 this.dir = dir;
             }
+        }
+        public DirectoryInfo ImgOutDir()
+        {
+            return new DirectoryInfo(Path.Combine(dir.FullName, Path.GetFileNameWithoutExtension(fileinfo.Name)));
         }
     }
 }
