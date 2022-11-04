@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static System.Windows.Forms.Design.AxImporter;
 
@@ -57,13 +58,32 @@ namespace v3._1
             sb.AppendLine("    <style tyle=\"text/css\">");
             foreach (var style in styles)
             {
+                string style_key = style.Key;
+
                 // 对比字典中样式 -> style=aaa:bbb;ccc:ddd;>
+                Match matchA = Regex.Match(style_key, "style=(.+?;)>");
                 // 对比字典中样式 -> style="aaa:bbb;ccc:ddd;" eee='fff' ggg=hhh>
+                Match matchB = Regex.Match(style_key, "style=\"(.*?)\"(.+?)>");
 
+                if (!(matchA.Success | matchB.Success))
+                {
+                    控制台.错误($"无法识别的样式 - {style_key}");
+                }
 
+                if (matchA.Success)
+                {
+                    int slen = "style=".Length;
+                    style_key = style_key.Substring(slen, matchA.Value.Length - slen - 1);
+                }
+                else
+                {
+                    string partA = matchB.Groups[1].Value;
+                    string partB = matchB.Groups[2].Value;
+                    partB = partB.Replace("=", ":");
+                    style_key = partA + partB;
+                }
 
-
-                string style_str = string.Format(".n{0}{{{1}}}\n", style.Value, style.Key);
+                string style_str = string.Format("        .n{0}{{{1}}}", style.Value, style_key);
                 sb.AppendLine(style_str);
             }
             sb.AppendLine("    </style>\n</body>\n</html>");
