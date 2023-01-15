@@ -13,3 +13,4 @@ D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\obj\Debug\ne
 D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\obj\Debug\net6.0-windows\v3.1.pdb
 D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\obj\Debug\net6.0-windows\v3.1.genruntimeconfig.cache
 D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\obj\Debug\net6.0-windows\ref\v3.1.dll
+D:\Win11\Administrator\Documents\GitHub\QQ_Mht_Message_To_Html\v3.1\obj\Debug\net6.0-windows\v3.1.csproj.Fody.CopyLocal.cache

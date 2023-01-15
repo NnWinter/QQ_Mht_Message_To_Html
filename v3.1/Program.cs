@@ -5,7 +5,7 @@ var 获取mht路径 = FileInfo () =>
 {
     Console.WriteLine("打开文件流");
 #if DEBUG
-    var fileInfo = new FileInfo("test.mht");
+    var fileInfo = new FileInfo("test_含有丢失的dat.mht");
 #else
     var fileInfo = new FileInfo(args[0]);
 #endif

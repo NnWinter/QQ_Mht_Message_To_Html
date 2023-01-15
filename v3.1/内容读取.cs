@@ -80,7 +80,11 @@ namespace v3._1
 
             // 移动未被使用的图片
             Console.WriteLine("正在移动未使用图片到新目录");
-            IO.移动多余图片(options, imgs);
+            if(imgs.Count > 0) // 记录中可能没有图像的情况则不需要移动
+            {
+                Console.WriteLine("读取到的图像数量为 0, 跳过");
+                IO.移动多余图片(options, imgs);
+            }
             Console.WriteLine("移动完毕\n");
 
         }
@@ -145,7 +149,7 @@ namespace v3._1
                         mtr = mtr.Replace($"</div>{match.Groups[1].Value}</div>", $"</div>{timeStr}</div>");
 
                         string? imgName;
-                        mtr = 替换图片(mtr, imgExtMap, options, out imgName);
+                        mtr = 替换图片(mtr, imgExtMap, options, lineCount, out imgName);
                         if (imgName != null)
                         {
                             imgs.Add(imgName);
@@ -178,17 +182,27 @@ namespace v3._1
             }
             return line;
         }
-        private static string 替换图片(string line, Dictionary<string, string> imgExtMap, UserOptions options, out string? newName)
+        private static string 替换图片(string line, Dictionary<string, string> imgExtMap, UserOptions options, long lineCount, out string? newName)
         {
             Match match = Regex.Match(line,"<IMG src=\"({.+?}.dat)\">");
             string? imgName = null;
             if (match.Success)
             {
                 var outDir = options.ImgOutDir();
-                imgName = imgExtMap[match.Groups[1].Value];
-                var outPath = Path.Combine(outDir.FullName, imgName);
-                var relativePath = Path.GetRelativePath(options.dir.FullName, outPath);
-                line = Regex.Replace(line, "<IMG src=\"({.+?}.dat)\">", "<IMG src=\"" + relativePath + "\">");
+
+                var foundImg = imgExtMap.TryGetValue(match.Groups[1].Value, out imgName);
+
+                if (foundImg)
+                {
+                    var outPath = Path.Combine(outDir.FullName, imgName);
+                    var relativePath = Path.GetRelativePath(options.dir.FullName, outPath);
+                    line = Regex.Replace(line, "<IMG src=\"({.+?}.dat)\">", "<IMG src=\"" + relativePath + "\">");
+                }
+                else
+                {
+                    控制台.警告($"警告: 在 {lineCount} 行 读取图像时未在mht下方找到图像数据 - {match.Groups[1].Value}");
+                    line = Regex.Replace(line, "<IMG src=\"({.+?}.dat)\">", $"<div>[未找到的图片: {match.Groups[1].Value}]</div>");
+                }
             }
             newName = imgName;
             return line;
