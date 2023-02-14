@@ -78,7 +78,7 @@ namespace v3._1
                     var outPath = Path.Combine(outDir.FullName, imgName);
                     img.Save(outPath);
                 }
-                catch { 控制台.警告("读取并保存图片数据时发生了一个错误 - 位于行: " + skiped); }
+                catch { 控制台.警告("\n读取并保存图片数据时发生了一个错误 - 位于行: " + skiped); }
             };
             #endregion
 
