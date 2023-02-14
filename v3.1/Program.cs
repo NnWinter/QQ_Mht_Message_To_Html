@@ -39,7 +39,7 @@ long lineCount = 0;
 StreamReader? mhtStream = IO.GetReader(mhtFileInfo);
 
 //   读取 MHT 文件头
-if (mhtStream == null) { 控制台.错误("打开文件流失败"); return; }
+if (mhtStream == null) { 控制台.错误($"打开文件流失败: {mhtFileInfo.FullName}"); return; }
 MhtHeader header = new MhtHeader(mhtStream, ref lineCount);
 
 //   寻找 table 起始位置 (传递 lineCount 用于报告行数)

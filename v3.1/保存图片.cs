@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace v3._1
 {
@@ -84,7 +78,7 @@ namespace v3._1
                     var outPath = Path.Combine(outDir.FullName, imgName);
                     img.Save(outPath);
                 }
-                catch { 控制台.错误("读取并保存图片数据时发生了一个错误 - 位于行: " + skiped); }
+                catch { 控制台.警告("读取并保存图片数据时发生了一个错误 - 位于行: " + skiped); }
             };
             #endregion
 
@@ -96,30 +90,37 @@ namespace v3._1
             string? line;
             while ((line = stream.ReadLine()) != null)
             {
+                string imgName = "";
                 skiped++;
-                if (line.StartsWith("------=_NextPart_") && !line.EndsWith("--"))
+                try
                 {
-                    // 获取扩展名
-                    string ext = GetExt();
-                    skiped++;
+                    if (line.StartsWith("------=_NextPart_") && !line.EndsWith("--"))
+                    {
+                        // 获取扩展名
+                        string ext = GetExt();
+                        skiped++;
 
-                    // 检查编码方式
-                    CheckBase64();
-                    skiped++;
+                        // 检查编码方式
+                        CheckBase64();
+                        skiped++;
 
-                    // 获取文件名并写入字典
-                    string imgName = GetImgName(ext, extMapping);
-                    skiped++;
+                        // 获取文件名并写入字典
+                        imgName = GetImgName(ext, extMapping);
+                        skiped++;
 
-                    // 读一个空行
-                    stream.ReadLine();
+                        // 读一个空行
+                        stream.ReadLine();
 
-                    //保存图片
-                    SaveImg(stream, imgName, options);
+                        //保存图片
+                        SaveImg(stream, imgName, options);
 
-                    //输出提示
-                    Console.CursorLeft = 0;
-                    Console.Write($"已保存 {++imgCount} 个图片".PadRight(20));
+                        //输出提示
+                        Console.CursorLeft = 0;
+                        Console.Write($"已保存 {++imgCount} 个图片".PadRight(20));
+                    }
+                }
+                catch (Exception e){
+                    控制台.警告($"警告 - 保存图片时发生了一个错误，位于行 {skiped}，图片：{imgName}，错误信息：{e.Message}");
                 }
             }
             Console.WriteLine();
