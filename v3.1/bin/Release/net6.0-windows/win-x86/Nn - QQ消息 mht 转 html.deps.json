@@ -1,18 +1,18 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v6.0/win-x64",
+    "name": ".NETCoreApp,Version=v6.0/win-x86",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v6.0": {},
-    ".NETCoreApp,Version=v6.0/win-x64": {
-      "v3.1/1.0.0": {
+    ".NETCoreApp,Version=v6.0/win-x86": {
+      "Nn - QQ消息 mht 转 html/1.0.0": {
         "dependencies": {
           "Costura.Fody": "5.7.0"
         },
         "runtime": {
-          "v3.1.dll": {}
+          "Nn - QQ消息 mht 转 html.dll": {}
         }
       },
       "Costura.Fody/5.7.0": {
@@ -892,7 +892,7 @@
     }
   },
   "libraries": {
-    "v3.1/1.0.0": {
+    "Nn - QQ消息 mht 转 html/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

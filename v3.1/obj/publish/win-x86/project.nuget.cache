@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "UCID03QPrgq4x1pXi6HvYL7VhH5mEWfK1oYeS7hwUDDnFFECc0PsRtDqwT1KJGgKWD7pW4hFmxE8K4lXKuZ6qA==",
+  "dgSpecHash": "nLGLLlQpbyxojzkidxdVyCH25ZGrQTqh6G6UT7DhxLkhXiYxD8PiRARKLWOueAns0g9hhafUUPsJnSkb8jkypQ==",
   "success": true,
   "projectFilePath": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
   "expectedPackageFiles": [
@@ -108,7 +108,11 @@
     "C:\\Users\\Administrator\\.nuget\\packages\\system.threading.tasks.extensions\\4.3.0\\system.threading.tasks.extensions.4.3.0.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\system.threading.timer\\4.3.0\\system.threading.timer.4.3.0.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
-    "C:\\Users\\Administrator\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512"
+    "C:\\Users\\Administrator\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\6.0.13\\microsoft.netcore.app.runtime.win-x86.6.0.13.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x86\\6.0.13\\microsoft.windowsdesktop.app.runtime.win-x86.6.0.13.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\6.0.13\\microsoft.aspnetcore.app.runtime.win-x86.6.0.13.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netcore.app.crossgen2.win-x64\\6.0.13\\microsoft.netcore.app.crossgen2.win-x64.6.0.13.nupkg.sha512"
   ],
   "logs": []
 }
