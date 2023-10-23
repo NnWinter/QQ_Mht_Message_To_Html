@@ -4644,23 +4644,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Administrator\\.nuget\\packages\\": {},
-    "D:\\Win11_Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\NnWinter\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
+      "projectUniqueName": "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
       "projectName": "Nn - QQ消息 mht 转 html",
-      "projectPath": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
-      "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-      "outputPath": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\obj\\",
+      "projectPath": "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
+      "packagesPath": "C:\\Users\\NnWinter\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Win11_Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\NnWinter\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4714,7 +4714,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

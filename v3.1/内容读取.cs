@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace v3._1
 {
@@ -12,7 +14,7 @@ namespace v3._1
             // 输出流
             string outFilePath = Path.Combine(options.dir.FullName, Path.GetFileNameWithoutExtension(options.fileinfo.Name) + ".html");
             StreamWriter writer = new StreamWriter(outFilePath);
-            
+
             // 写入html头
             writer.WriteLine(IO.HtmlHead());
             writer.Flush();
@@ -59,7 +61,7 @@ namespace v3._1
                 }
                 catch (Exception ex)
                 {
-                    控制台.错误($"读取行内容时发射错误 位于行: {lineCount} - {ex.Message}");
+                    控制台.错误($"读取行内容时发生错误 位于行: {lineCount} - {ex.Message}");
                 }
             }
 
@@ -72,7 +74,7 @@ namespace v3._1
 
             // 移动未被使用的图片
             Console.WriteLine("正在移动未使用图片到新目录");
-            if(imgs.Count > 0) // 记录中可能没有图像的情况则不需要移动
+            if (imgs.Count > 0) // 记录中可能没有图像的情况则不需要移动
             {
                 Console.WriteLine("读取到的图像数量为 0, 跳过");
                 IO.移动多余图片(options, imgs);
@@ -83,7 +85,7 @@ namespace v3._1
         private static string 寻找表头(StreamReader stream, ref long lineCount)
         {
             string? line;
-            while((line = stream.ReadLine()) != null)
+            while ((line = stream.ReadLine()) != null)
             {
                 lineCount++;
                 Match match = Regex.Match(line, "<table.+?>(.+)");
@@ -98,7 +100,7 @@ namespace v3._1
         private static (string, string) 拆分表头行(string th)
         {
             Match match = Regex.Match(th, "(<tr><td><div.+?><br><b>.+?<\\/b><\\/div><\\/td><\\/tr><tr><td><div.+?>消息分组:.+?<\\/div><\\/td><\\/tr><tr><td><div.+?>消息对象:.+?<\\/div><\\/td><\\/tr><tr><td><div.+?>&nbsp;<\\/div><\\/td><\\/tr>)(.+)");
-            if (!match.Success) { 控制台.错误("表头格式不匹配"); return new ("",""); }
+            if (!match.Success) { 控制台.错误("表头格式不匹配"); return new("", ""); }
             var header = match.Groups[1].Value;
             var first = match.Groups[2].Value;
             return (header, first);
@@ -123,23 +125,78 @@ namespace v3._1
                     // 当前时间字符串
                     string mtr = tr.Value;
                     // 如果日期为空则为错误
-                    if (date == null) 
-                    { 
-                        控制台.错误($"读取第 {lineCount} 行的消息前没有读取到该消息所属日期，按任意键退出"); return; 
-                    }
-                    // 读取日期
-                    var match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d)</div><div class=.+?</div></td></tr>");
-                    // 修改日期 如果没找到指定的日期标签则不做修改
-                    if (match.Success)
+                    if (date == null)
                     {
-                        TimeOnly time = TimeOnly.ParseExact(match.Groups[1].Value.PadLeft(8, '0'), "HH:mm:ss");
-                        DateTime dateTime = date.Value.ToDateTime(time);
+                        控制台.错误($"读取第 {lineCount} 行的消息前没有读取到该消息所属日期，按任意键退出"); return;
+                    }
+                    // 日期处理
+                    {
+                        const string NnTimeFormat = "yyyy/MM/dd  HH:mm:ss";
+
+                        // 不同小时制
+                        DateTime? GetDateTime(DateOnly? date, out string replaceOri, out string replacement)
+                        {
+                            // 24小时制
+                            var match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d)</div><div class=.+?</div></td></tr>");
+                            if (match.Success)
+                            {
+                                var dateTime = date.Value.ToDateTime(TimeOnly.ParseExact(match.Groups[1].Value, "H:mm:ss"));
+                                string timeStr = dateTime.ToString(NnTimeFormat);
+                                replaceOri = match.Groups[1].Value;
+                                replacement = timeStr;
+                                return dateTime;
+                            }
+                            // 12小时制 (AM PM 可能导致错误的时间)
+                            match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d) ([AP]M)</div><div class=.+?</div></td></tr>");
+                            if (match.Success)
+                            {
+                                var timeonly = TimeOnly.ParseExact(match.Groups[1].Value, "h:mm:ss");
+                                if (match.Groups[2].Value == "PM" && timeonly.Hour != 12) { timeonly = new TimeOnly(timeonly.Hour + 12, timeonly.Minute, timeonly.Second); }
+                                var dateTime = date.Value.ToDateTime(timeonly);
+                                string timeStr = dateTime.ToString(NnTimeFormat);
+                                replaceOri = match.Groups[1].Value + " " + match.Groups[2].Value;
+                                replacement = timeStr;
+                                return dateTime;
+                            }
+                            // 12小时制含nbsp (AM PM 可能导致错误的时间)
+                            match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d)&nbsp;([AP]M)</div><div class=.+?</div></td></tr>");
+                            if (match.Success)
+                            {
+                                var timeonly = TimeOnly.ParseExact(match.Groups[1].Value, "h:mm:ss");
+                                if (match.Groups[2].Value == "PM" && timeonly.Hour != 12) { timeonly = new TimeOnly(timeonly.Hour + 12, timeonly.Minute, timeonly.Second); }
+                                var dateTime = date.Value.ToDateTime(timeonly);
+                                string timeStr = dateTime.ToString(NnTimeFormat);
+                                replaceOri = match.Groups[1].Value + "&nbsp;" + match.Groups[2].Value;
+                                replacement = timeStr;
+                                return dateTime;
+                            }
+                            replaceOri = ""; replacement = "";
+                            return null;
+                        }
+
+                        // 获取时间
+                        var dateTime = GetDateTime(date, out string replaceOri, out string timeStr);
+
+                        // 获取时间失败除错
+                        if (dateTime == null)
+                        {
+                            var theTime = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(.+?)</div><div class=.+?</div></td></tr>");
+                            if (theTime.Success)
+                            {
+                                控制台.错误($"在处理 {lineCount} 行时，消息的时间未能成功读取, 错误的日期：{theTime.Groups[1]}");
+                            }
+                            else
+                            {
+                                控制台.错误($"{lineCount} 行没能读取时间，且数据格式可能错误");
+                            }
+                        }
 
                         if ((dateTime < options.begin || dateTime > options.end) && options.cut) { continue; }
 
-                        string timeStr = dateTime.ToString("yyyy/MM/dd  HH:mm:ss");
-                        mtr = mtr.Replace($"</div>{match.Groups[1].Value}</div>", $"</div>{timeStr}</div>");
+                        // 替换时间文本
+                        mtr = mtr.Replace($"</div>{replaceOri}</div>", $"</div>{timeStr}</div>");
 
+                        // 替换图片
                         string? imgName;
                         mtr = 替换图片(mtr, imgExtMap, options, lineCount, out imgName);
                         if (imgName != null)
@@ -147,6 +204,7 @@ namespace v3._1
                             imgs.Add(imgName);
                         }
 
+                        // 输出结果
                         writer.WriteLine("        " + mtr);
                     }
                 }
@@ -176,7 +234,7 @@ namespace v3._1
         }
         private static string 替换图片(string line, Dictionary<string, string> imgExtMap, UserOptions options, long lineCount, out string? newName)
         {
-            Match match = Regex.Match(line,"<IMG src=\"({.+?}.dat)\">");
+            Match match = Regex.Match(line, "<IMG src=\"({.+?}.dat)\">");
             string? imgName = null;
             if (match.Success)
             {
