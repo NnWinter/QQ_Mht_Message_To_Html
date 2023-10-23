@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj": {}
+    "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj": {}
   },
   "projects": {
-    "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj": {
+    "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
+        "projectUniqueName": "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
         "projectName": "Nn - QQ消息 mht 转 html",
-        "projectPath": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
-        "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "D:\\Win11\\Administrator\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\obj\\publish\\win-x64\\",
+        "projectPath": "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\v3.1.csproj",
+        "packagesPath": "C:\\Users\\NnWinter\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\NnWinter\\Documents\\GitHub\\QQ_Mht_Message_To_Html\\v3.1\\obj\\publish\\win-x64\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "D:\\Win11_Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\NnWinter\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -66,19 +66,19 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[6.0.13, 6.0.13]"
+              "version": "[6.0.21, 6.0.21]"
             },
             {
               "name": "Microsoft.NETCore.App.Crossgen2.win-x64",
-              "version": "[6.0.13, 6.0.13]"
+              "version": "[6.0.21, 6.0.21]"
             },
             {
               "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[6.0.13, 6.0.13]"
+              "version": "[6.0.21, 6.0.21]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[6.0.13, 6.0.13]"
+              "version": "[6.0.21, 6.0.21]"
             }
           ],
           "frameworkReferences": {
@@ -89,7 +89,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
