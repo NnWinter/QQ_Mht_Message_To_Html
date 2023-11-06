@@ -131,51 +131,8 @@ namespace v3._1
                     }
                     // 日期处理
                     {
-                        const string NnTimeFormat = "yyyy/MM/dd  HH:mm:ss";
-
-                        // 不同小时制
-                        DateTime? GetDateTime(DateOnly? date, out string replaceOri, out string replacement)
-                        {
-                            // 24小时制
-                            var match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d)</div><div class=.+?</div></td></tr>");
-                            if (match.Success)
-                            {
-                                var dateTime = date.Value.ToDateTime(TimeOnly.ParseExact(match.Groups[1].Value, "H:mm:ss"));
-                                string timeStr = dateTime.ToString(NnTimeFormat);
-                                replaceOri = match.Groups[1].Value;
-                                replacement = timeStr;
-                                return dateTime;
-                            }
-                            // 12小时制 (AM PM 可能导致错误的时间)
-                            match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d) ([AP]M)</div><div class=.+?</div></td></tr>");
-                            if (match.Success)
-                            {
-                                var timeonly = TimeOnly.ParseExact(match.Groups[1].Value, "h:mm:ss");
-                                if (match.Groups[2].Value == "PM" && timeonly.Hour != 12) { timeonly = new TimeOnly(timeonly.Hour + 12, timeonly.Minute, timeonly.Second); }
-                                var dateTime = date.Value.ToDateTime(timeonly);
-                                string timeStr = dateTime.ToString(NnTimeFormat);
-                                replaceOri = match.Groups[1].Value + " " + match.Groups[2].Value;
-                                replacement = timeStr;
-                                return dateTime;
-                            }
-                            // 12小时制含nbsp (AM PM 可能导致错误的时间)
-                            match = Regex.Match(tr.Value, "<tr><td><div class=.+?><div class=.+?>.+?</div>(\\d?\\d:\\d\\d:\\d\\d)&nbsp;([AP]M)</div><div class=.+?</div></td></tr>");
-                            if (match.Success)
-                            {
-                                var timeonly = TimeOnly.ParseExact(match.Groups[1].Value, "h:mm:ss");
-                                if (match.Groups[2].Value == "PM" && timeonly.Hour != 12) { timeonly = new TimeOnly(timeonly.Hour + 12, timeonly.Minute, timeonly.Second); }
-                                var dateTime = date.Value.ToDateTime(timeonly);
-                                string timeStr = dateTime.ToString(NnTimeFormat);
-                                replaceOri = match.Groups[1].Value + "&nbsp;" + match.Groups[2].Value;
-                                replacement = timeStr;
-                                return dateTime;
-                            }
-                            replaceOri = ""; replacement = "";
-                            return null;
-                        }
-
                         // 获取时间
-                        var dateTime = GetDateTime(date, out string replaceOri, out string timeStr);
+                        var dateTime = 时间处理.GetDateTime(tr.Value, date, out string replaceOri, out string timeStr);
 
                         // 获取时间失败除错
                         if (dateTime == null)
